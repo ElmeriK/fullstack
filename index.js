@@ -2,32 +2,22 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(bodyParser.json())
 app.use(cors())
 app.use(express.static('build'))
 
-let persons = [
-      {
-        "name": "Arto Järvinen",
-        "number": "040-123456",
-        "id": 1
-      },
-      {
-        "name": "Big bertha",
-        "number": "1235234",
-        "id": 2
-      },
-      {
-        "name": "Petteri Aaltonen",
-        "number": "12352344123",
-        "id": 5
-      }
-]
 
-
-app.get('/api/persons', (req, res) => {
-  res.json(persons)
+app.get('/api/persons', (request, response) => {
+  Person
+  .find({})
+  .then(persons => {
+    response.json(persons.map(formatPerson))
+  })
+  .catch(error => {
+    console.log(error)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -41,6 +31,14 @@ app.get('/api/persons/:id', (request, response) => {
   }
 })
 
+const formatPerson = (person) => {
+  return {
+    name: person.name,
+    number: person.number,
+    id: person._id
+  }
+}
+
 const generateId = () => {
   const random = Math.floor(Math.random() * 10000); 
   return random
@@ -52,26 +50,31 @@ app.post('/api/persons', (request, response) => {
   if (body.name === undefined || body.number === undefined) {
     return response.status(400).json({ error: 'content missing' })
   }
-  if (persons.find(person => person.name === body.name)){
-    return response.status(400).json({ error: 'name must be unique' })
-  }
 
-  const person = {
-    name: body.name,
-    number: body.number,
-    id: generateId()
-  }
-
-  persons = persons.concat(person)
-
-  response.json(person)
+  const person = new Person({
+        name: body.name,
+        number: body.number,
+        id: generateId()
+      })
+    person
+      .save()
+      .then(savedPerson => {
+        response.json(savedPerson)
+      })
+      .catch(error => {
+        console.log(error)
+      })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-
-  response.status(204).end()
+  Person
+    .findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => {
+      response.status(400).send({ error: 'malformatted id' })
+    })
 })
 
 const PORT = process.env.PORT || 3001
