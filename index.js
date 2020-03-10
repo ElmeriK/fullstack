@@ -20,6 +20,7 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
+//This dosent work with the mongoDB and wasnt required
 app.get('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
   const person = persons.find(person => person.id === id)

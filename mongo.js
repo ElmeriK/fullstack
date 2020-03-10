@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const url = 'mongodb+srv://PhoneDbUser:BigBertha279@kuismincluster-s2oxq.mongodb.net/test?retryWrites=true&w=majority'
+const url = 'deleted from git'
 
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
